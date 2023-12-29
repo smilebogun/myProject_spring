@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:beans="http://www.springframework.org/schema/beans"
+   xmlns:context="http://www.springframework.org/schema/context"
+   xsi:schemaLocation="http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd
+      http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+      http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+   <!-- DispatcherServlet Context: defines this servlet's request-processing infrastructure -->
+   
+   <!-- Enables the Spring MVC @Controller programming model -->
+   <annotation-driven />
+
+   <!-- Handles HTTP GET requests for /resources/** by efficiently serving up static resources in the ${webappRoot}/resources directory -->
+   <resources mapping="/resources/**" location="/resources/" />
+   <!-- /resources/** 에서 /resources를 지우면 경로에서 /resources 를 안적어 줘도 됌 -->
+
+   <!-- Resolves views selected for rendering by @Controllers to .jsp resources in the /WEB-INF/views directory -->
+   <beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+      <beans:property name="prefix" value="/WEB-INF/views/" />
+      <beans:property name="suffix" value=".jsp" />
+   </beans:bean>
+   
+   <!-- API설정 : 파일업로드 API를 활용한 MultipartResolver 객체 생성 // pom.xml에서 다운 -->
+   <beans:bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+   		<!-- 업로드 가능한 최대 파일 사이즈 -->
+   		<beans:property name="maxUploadSize" value="10000000"/> <!-- 10MB -->
+   		<!-- <beans:property name="maxUploadSizePerFile" value="5*1024*1024"/> --> <!-- 5MB -->
+   		<beans:property name="maxInMemorySize" value="20000000"/> <!-- 20MB -->
+   </beans:bean>
+   
+   <!-- 이메일 인증 API Bean 등록 // root-context로 옴김, servlet-context는 root-context를 참조함 // 단, 반대로는 참조가 안됌 -->
+<!--    <beans:bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+   		<beans:property name="host" value="smtp.gmail.com"/> 호스트 smtp 방식 gmail
+   		<beans:property name="port" value="587"/> 포트번호 587
+   		<beans:property name="username" value="smilebogun1@gmail.com"/> 
+   		<beans:property name="password" value="sdsdnzcptlufsnkm"/>
+   		<beans:property name="defaultEncoding" value="utf-8"/>
+   		
+   		<beans:property name="javaMailProperties">
+         <beans:props>
+                <beans:prop key="mail.transport.protocol">smtp</beans:prop>
+                <beans:prop key="mail.smtp.auth">true</beans:prop>
+                <beans:prop key="mail.smtp.starttls.enable">true</beans:prop>
+                <beans:prop key="mail.debug">true</beans:prop>
+                <beans:prop key="mail.smtp.ssl.trust">smtp.gmail.com</beans:prop>
+            <beans:prop key="mail.smtp.ssl.protocols">TLSv1.2</beans:prop>
+            </beans:props>
+      </beans:property>
+   </beans:bean> -->
+   
+   <!-- *** 인터셉터 *** bean 생성 -->
+   		<!-- beans를 밖으로 빼놓으면 <interceptors><interceptor> 에서 참조할 수 있음  -->
+   <beans:bean id="inter1" class="kr.ezen.pwEncoder.test.InterceptorDemo1"></beans:bean>
+
+   		<!-- 비로그인시 헤더기능 사용불가 -->
+   <beans:bean id="loginInterceptor" class="kr.ezen.pwEncoder.test.LoginInterceptor"></beans:bean>
+   
+   <interceptors>
+   		<interceptor>
+   			<mapping path="/test1"/>
+   			<beans:ref bean="inter1"/>
+   		</interceptor>
+   		<interceptor>
+   			<mapping path="/test2"/>
+   			<beans:bean class="kr.ezen.pwEncoder.test.InterceptorDemo2"/>
+   				<!-- beans를  <interceptors><interceptor> 안에서 사용하면 다른곳에서 참조 할 수 없음  -->
+   		</interceptor>
+   		<interceptor>
+   			<mapping path="/**"/> <!-- path="/**" : 모든경로 다불러옴, 첫 홈페이지 뜰때 root도 발생한번 됌 -->
+   			<beans:bean class="kr.ezen.pwEncoder.test.InterceptorDemo3"/>
+   				<!-- beans를  <interceptors><interceptor> 안에서 사용하면 다른곳에서 참조 할 수 없음  -->
+   		</interceptor>
+   		<interceptor>
+   			<mapping path="/**"/> <!-- path="/**" : 모든경로 다불러옴, 첫 홈페이지 뜰때 root도 발생한번 됌 -->
+   			<exclude-mapping path="/*"/><!-- path="/*" 를 부르면 매핑 길에서 제외시킴  -->
+   			<beans:bean class="kr.ezen.pwEncoder.test.InterceptorDemo4"/>
+   				<!-- beans를  <interceptors><interceptor> 안에서 사용하면 다른곳에서 참조 할 수 없음  -->
+   		</interceptor>
+   		
+   		<!-- 비로그인시 헤더기능 사용불가 -->
+   		<interceptor>
+   			<mapping path="/memberList.do"/>
+   			<!-- <mapping path="/fileUpload.do"/> 업로드뷰는 보여지지만 OK는 인터셉터 됌 -->
+   			<mapping path="/fileUploadOk.do"/>
+   			<!-- <mapping path="/boardList.do"/> 리스트 뷰는 보여지지만 게시글 상세보기는 인터셉터 됌-->
+   			<mapping path="/viewBoard.do"/>
+   			<beans:ref bean="loginInterceptor"/>
+   		</interceptor>
+   		
+   </interceptors>
+   
+   <!-- 인터셉터 bean 생성 - 끝 - -->
+   
+   <context:component-scan base-package="kr.ezen.pwEncoder, kr.ezen.controller" />
+</beans:beans>

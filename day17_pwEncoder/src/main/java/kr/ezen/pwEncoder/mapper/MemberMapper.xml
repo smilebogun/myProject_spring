@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.ezen.pwEncoder.mapper.MemberMapper">
+
+	<!-- 멤버 전체 리스트 -->
+<!--   <select id="memberList" resultType="model.MemberDTO"> -->
+	<select id="memberList" resultType="MemberDTO">  <!-- config.xml 에서 별칭사용 -->
+	  	SELECT * FROM member
+	</select>
+  
+  	<!-- 멤버 등록 -->
+	<insert id="memberInsert" parameterType="MemberDTO">
+		INSERT INTO member VALUES(#{no}, #{id},#{pw},#{name},#{age},#{email},#{tel})
+<!-- 		INSERT INTO member(no,id,pw,name,age,email,tel) 
+		VALUES(#{no}, #{id},#{pw},#{name},#{age},#{email},#{tel}) 위와 결과가 똑같음 -->
+	</insert>
+	
+	<!-- 멤버 삭제 -->
+	<delete id="memberDelete" parameterType="Integer">
+		DELETE FROM member WHERE no = #{no}
+	</delete>
+	
+	<!-- 멤버 상세정보 -->
+	<!-- parameterType="Integer" 매개변수 타입 // resultType="MemberDTO" 바인딩(리턴) 타입 -->
+	<select id="memberInfo" parameterType="Integer" resultType="MemberDTO">
+	  	SELECT * FROM member WHERE no = #{no}
+	</select>
+	
+	<!-- 멤버 수정하기 OK -->
+	<update id="memberUpdate" parameterType="MemberDTO">
+		UPDATE member SET pw=#{pw}, name=#{name}, age=#{age}, tel=#{tel} WHERE no = #{no}
+	</update>
+  
+  	<!-- 멤버 아이디 중복체크 -->
+  	<!-- parameterType="Integer" 매개변수 타입 // resultType="MemberDTO" 바인딩(리턴) 타입 -->
+	<select id="memberIdCheck" parameterType="String" resultType="MemberDTO">
+	  	SELECT * FROM member WHERE id = #{uid}
+	</select>
+	
+	<!-- 멤버 로그인 OK -->
+	<select id="memberLogin" resultType="MemberDTO"> 
+	  	SELECT id, pw, name FROM member WHERE id = #{id}
+	</select>
+	
+	<!-- 오라클의 nvl(a, 0): a가 null일때 0으로 대체, null이 아니면 a값 그대로 반환
+	 mySQL의 nvl()과 같은 ifnull(a, 0)으로 사용 -->
+	 <!-- id만 넘어가면되서 MemberDTO가 아닌 String으로 반환 -->
+	<!-- 아이디 찾기 OK -->
+	<select id="findId" resultType="String">
+	  	SELECT id FROM member WHERE name = #{name} AND tel = #{tel}
+	</select>
+	
+	<!-- 비밀번호 찾기 OK // 임시비밀번호 발급 이후 임시비밀번호로 로그인 -->
+	<update id="findPw">		<!-- String uid, String uEmail, String tempPw(chiperPw) // param 1,2,3 -->
+		UPDATE member SET pw = #{param3} WHERE id = #{param1} AND email = #{param2} 
+	</update>
+  
+  	<!-- 마이프로필 폼 -> 비밀번호 변경 OK -->
+  	<update id="updatePw">		
+		UPDATE member SET pw = #{pw} WHERE id = #{id}
+	</update>
+</mapper>

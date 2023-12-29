@@ -1,0 +1,36 @@
+-- 게시판 테이블
+drop table tbl_board;
+create table tbl_board(
+    bid int auto_increment primary key, -- 게시글 번호
+    subject varchar(100) not null,    -- 제목
+    contents varchar(3000) not null, -- 글 내용
+    hit int default 0,       -- 조회수
+    writer varchar(50) not null,    -- 작성자
+    -- now() == oracle의 sysdate
+    reg_date datetime default now() not null     -- 등록날짜
+);
+insert into tbl_board(subject, contents, writer) values('테스트~~', '테스트', '아무개');
+
+-- 테이블에 댓글수를 저장할 수 있는 replyCnt 칼럼을 추가 - 기본값 0
+alter table tbl_board add (replyCnt int default 0);
+
+-- tbl_board - replyCnt 칼럼에 현재 tbl_reply의 댓글의 수를 적용
+set sql_safe_updates=0; -- safe update mode 종류 이후 진행되어야 함 
+						-- 메뉴로 들어가는 방법 : edit > preferences > SQL_Editor > safe mode 체크해제 > 재접속
+-- select count(rno) from tbl_reply where tbl_board.bid = tbl_reply.bid;
+-- 위 주석 : 댓글수를 가져오는 명령어 // 아래 명렁어 : 위에 주석가져온걸 replyCnt에 넣어줌
+update tbl_board set replyCnt = (select count(rno) from tbl_reply where tbl_board.bid = tbl_reply.bid);
+
+select * from tbl_board;
+select * from tbl_board limit 0, 10;	-- 10개만 가져오기 1 Page //  10, 10; 2 Page
+select * from tbl_board ORDER BY bid DESC limit 0, 10;
+
+-- 검색어 : subject(제목)에 '%수정%'이 앞뒤로 포함된거 ==>> 동적쿼리를 사용해야 함
+select * from tbl_board where subject like '%수정%'
+ORDER BY bid DESC limit 0, 10;
+
+-- 게시글수 totalCnt 계산
+SELECT count(*) FROM tbl_board where subject like '%123%';
+
+desc tbl_board;
+commit;

@@ -1,0 +1,23 @@
+-- 게시판 댓글 테이블
+drop table tbl_reply;
+create table tbl_reply(
+	rno int auto_increment primary key,			-- 댓글번호
+    bid int,									-- 어떤 글의 댓글인지 사용
+    r_contents varchar(1000) not null,			-- 댓글내용
+    replyer varchar(20) not null,				-- 댓글작성자
+    r_date datetime default now(),		-- 댓글 작성시간
+    update_date datetime default now(),	-- 댓글 수정시간
+    
+    -- tbl_board의 bid를 참조하여 댓글 외래키로 사용
+    foreign key(bid) references tbl_board(bid)
+);
+select * from tbl_reply;
+insert into tbl_reply(bid, r_contents, replyer) values(169, '댓글내용', '홍길동');
+desc tbl_reply;
+commit;
+
+// 댓글등록
+// 댓글삭제
+// 댓글조회
+// 댓글수정
+// 특정게시글에 대한 댓글조회(리스트)
